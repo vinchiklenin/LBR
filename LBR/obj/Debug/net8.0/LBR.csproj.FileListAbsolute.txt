@@ -32,3 +32,7 @@ D:\Games\Sharps\LBR\LBR\obj\Debug\net8.0\ref\LBR.dll
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\floor.xnb
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\wall.xnb
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\hero.xnb
+D:\Games\Sharps\LBR\LBR\obj\Debug\net8.0\LBR.sourcelink.json
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\coin.xnb
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\end.xnb
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\Monocraft.xnb

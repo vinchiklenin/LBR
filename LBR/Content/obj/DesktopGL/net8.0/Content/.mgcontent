@@ -4,11 +4,17 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>D:/Games/Sharps/LBR/LBR/Content/coin.png</File>
+    <File>D:/Games/Sharps/LBR/LBR/Content/end.png</File>
     <File>D:/Games/Sharps/LBR/LBR/Content/floor.png</File>
     <File>D:/Games/Sharps/LBR/LBR/Content/hero.png</File>
+    <File>D:/Games/Sharps/LBR/LBR/Content/Monocraft.spritefont</File>
     <File>D:/Games/Sharps/LBR/LBR/Content/wall.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
