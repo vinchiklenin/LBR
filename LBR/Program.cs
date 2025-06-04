@@ -9,11 +9,13 @@ LBR.Game1 game;
 while (true)
 {
     game = new Game1(player);
-    game.RunOneFrame();
+
+    game.Run();
     player = game._player;
     
     Console.WriteLine(player.Levels);
     //game.Exit();
+    break;
 
 
 }

@@ -6,24 +6,25 @@ using Microsoft.Xna.Framework.Input;
 using System.Linq;
 using Microsoft.Xna.Framework.Content;
 
-
 namespace LBR;
 
 public class Game1 : Game
 {
-    Texture2D wallTexture;
-    Texture2D floorTexture;
-    Texture2D heroTexture;
-    Texture2D coinTexture;
-    Texture2D endTexture;
-    SpriteFont tittleTexture;
+    public Scene _activeScene;
+    
+    public Scene _nextScene;
 
+    public GraphicsDevice _device;
     
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    public SpriteBatch _spriteBatch;
     public Player _player;
-    
-    private Level _level;
+    public Texture2D wallTexture;
+    public Texture2D floorTexture;
+    public Texture2D heroTexture;
+    public Texture2D coinTexture;
+    public Texture2D endTexture;
+    public SpriteFont tittleTexture;
 
     public Game1(Player player)
     {
@@ -40,23 +41,20 @@ public class Game1 : Game
         _graphics.PreferredBackBufferWidth = 1200;
         _graphics.PreferredBackBufferHeight = 800;
         _graphics.ApplyChanges();
-        _level = new Level();
-        // TODO: Add your initialization logic here
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
         base.Initialize();
+        Console.WriteLine("Game Init");
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
         wallTexture = Content.Load<Texture2D>("wall");
         floorTexture = Content.Load<Texture2D>("floor");
         heroTexture = Content.Load<Texture2D>("hero");
         coinTexture = Content.Load<Texture2D>("coin");
         endTexture = Content.Load<Texture2D>("end");
         tittleTexture = Content.Load<SpriteFont>("Monocraft");
-
-        var level = new Level();
-
+        _activeScene = new Scene(this, _player);
     }
 
     protected override void Update(GameTime gameTime)
@@ -66,8 +64,89 @@ public class Game1 : Game
         {
             Exit();
         }
+        if (_nextScene != null) TransitionScene();
+        if(_activeScene != null) _activeScene.Update(gameTime);
+        base.Update(gameTime);
+    }
 
-        // TODO: Add your update logic here
+    protected override void Draw(GameTime gameTime)
+    {
+        GraphicsDevice.Clear(Color.CornflowerBlue);
+        
+        if(_activeScene != null)
+        {
+            _activeScene.Draw(_spriteBatch);
+        }
+        base.Draw(gameTime);
+    }
+    
+    public void ChangeScene(Scene next)
+    {
+
+        if(_activeScene != next)
+        {
+            _nextScene = next;
+        }
+    }
+    
+    private void TransitionScene()
+    {
+        if(_activeScene != null)
+        {
+            _activeScene.UnloadContent();
+        }
+        GC.Collect();
+        _activeScene = _nextScene;
+        _nextScene = null;
+        if(_activeScene != null) _activeScene.Initialize();
+    }
+}
+
+public class Scene
+{
+    protected Game1 _game;
+    
+    protected ContentManager _content;
+    public Level _level;
+    public Player _player;
+    Texture2D wallTexture;
+    Texture2D floorTexture;
+    Texture2D heroTexture;
+    Texture2D coinTexture;
+    Texture2D endTexture;
+    SpriteFont tittleTexture;
+    private SpriteBatch _spriteBatch;
+    
+    public Scene(Game1 game, Player _player)
+    {
+
+        if (game == null)
+        {
+            throw new ArgumentNullException(nameof(game), "Game cannot be null!");
+        }
+        this._game = game;
+        this._level = new Level();
+        this._player = _player;
+        this._spriteBatch = _game._spriteBatch;
+        wallTexture = _game.wallTexture;
+        floorTexture = _game.floorTexture;
+        heroTexture = _game.heroTexture;
+        coinTexture = _game.coinTexture;
+        endTexture = _game.endTexture;
+        tittleTexture = _game.tittleTexture;
+    }
+    
+    public void Initialize()
+    {
+        _content = new ContentManager(_game.Services);
+        _content.RootDirectory = _game.Content.RootDirectory;
+    }
+    
+    
+    public void UnloadContent() { }
+
+    public void Update(GameTime gameTime)
+    {
         var kstate = Keyboard.GetState();
         int dX = 0;
         int dY = 0;
@@ -116,19 +195,15 @@ public class Game1 : Game
             _level.LevelData[((int)_level.HeroPosition.Y + dY + 33) / 50, ((int)_level.HeroPosition.X + dX + 29) / 50] == 2)
         {
             _player.Levels++;
-            Console.WriteLine("Еще один уровень");
-            Exit();
+            _game._nextScene = new Scene(_game, _player);
         }
-        base.Update(gameTime);
     }
-
-    protected override void Draw(GameTime gameTime)
+    
+    
+    public void Draw(SpriteBatch _spriteBatch)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
+        _game.GraphicsDevice.Clear(Color.Indigo);
         _spriteBatch.Begin();
-        
         for (int i = 0; i < _level.LevelData.GetLength(0); i++)
         {
             for (int j = 0; j < _level.LevelData.GetLength(1); j++)
@@ -151,112 +226,10 @@ public class Game1 : Game
         _spriteBatch.DrawString(tittleTexture, "Levels:", new Vector2(500, 700), Color.White);
         _spriteBatch.DrawString(tittleTexture, _player.Levels.ToString(), new Vector2(720, 700), Color.White);
         _spriteBatch.End();
-        base.Draw(gameTime);
     }
 }
 
-public abstract class Scene
-{
-    protected Game1 _game;
-    
-    protected ContentManager _content;
-
-    /// <summary>
-    ///     Creates a new Scene instance.
-    /// </summary>
-    /// <param name="game">
-    ///     A reference to our Game1 instance.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown if the value supplied for <paramref name="game"/> 
-    ///     is null
-    /// </exception>
-    public Scene(Game1 game)
-    {
-        if (game == null)
-        {
-            throw new ArgumentNullException(nameof(game), "Game cannot be null!");
-        }
-        _game = game;
-    }
-    
-    public virtual void Initialize()
-    {
-        _content = new ContentManager(_game.Services);
-        _content.RootDirectory = _game.Content.RootDirectory;
-        LoadContent();
-    }
-
-
-    public virtual void LoadContent() { }
-
-    /// <summary>
-    ///     Unloads any content that has been loaded by the scene.
-    /// </summary>
-    /// <remarks>
-    ///     This will be called after the game switches to a new
-    ///     scene.
-    /// </remarks>
-    public virtual void UnloadContent() 
-    {
-        _content.Unload();
-        _content = null;
-    }
-
-    /// <summary>
-    ///     Updates the Scene.
-    /// </summary>
-    /// <param name="gameTime">
-    ///     A snapshot of the frame specific timing values.
-    /// </param>
-    public virtual void Update(GameTime gameTime) { }
-
-
-    /// <summary>
-    ///     Handles preparing the Scene to draw.
-    /// </summary>
-    /// <remarks>
-    ///     This is called just before the main Draw method.
-    /// </remarks>
-    /// <param name="spriteBatch"></param>
-    public virtual void BeforeDraw(SpriteBatch spriteBatch, Color clearColor)
-    {
-        //  Clear the backbuffer
-        _game.GraphicsDevice.Clear(clearColor);
-
-        //  Begin the spritebatch
-        spriteBatch.Begin();
-    }
-
-    /// <summary>
-    ///     Draws the Scene to the screen.
-    /// </summary>
-    /// <remarks>
-    ///     This is called immediately after BeforeDraw.
-    /// </remarks>
-    /// <param name="spriteBatch">
-    ///     The SpriteBatch instance used for rendering.
-    /// </param>
-    public virtual void Draw(SpriteBatch spriteBatch) { }
-
-    /// <summary>
-    ///     Handles ending any drawing the scene is performing.
-    /// </summary>
-    /// <remarks>
-    ///     This is called immediately after Draw.
-    /// </remarks>
-    /// <param name="spriteBatch">
-    ///     The SpriteBatch instance used for rendering.
-    /// </param>
-    public virtual void AfterDraw(SpriteBatch spriteBatch)
-    {
-        //  End the spritebatch
-        spriteBatch.End();
-    }
-}
-
-
-class Level
+public class Level
 {
     public string levelName;
     public int[,] LevelData;
@@ -436,6 +409,3 @@ public class Player
         this.Lives = 100;
     }
 }
-
-
-
