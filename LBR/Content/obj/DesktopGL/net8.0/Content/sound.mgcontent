@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>D:/Games/Sharps/LBR/LBR/Content/sound.mp3</SourceFile>
+  <SourceTime>2025-06-05T14:56:28.3363543+05:00</SourceTime>
+  <DestFile>D:/Games/Sharps/LBR/LBR/Content/bin/DesktopGL/Content/sound.xnb</DestFile>
+  <DestTime>2025-06-05T15:04:22.4933397+05:00</DestTime>
+  <Importer>Mp3Importer</Importer>
+  <ImporterTime>2025-04-05T15:10:54+05:00</ImporterTime>
+  <Processor>SongProcessor</Processor>
+  <ProcessorTime>2025-04-05T15:10:54+05:00</ProcessorTime>
+  <Parameters>
+    <Key>Quality</Key>
+    <Value>Best</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput>
+    <string>D:/Games/Sharps/LBR/LBR/Content/bin/DesktopGL/Content/sound.ogg</string>
+  </BuildOutput>
+</PipelineBuildEvent>

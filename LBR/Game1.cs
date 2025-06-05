@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Linq;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace LBR;
 
@@ -24,7 +26,10 @@ public class Game1 : Game
     public Texture2D heroTexture;
     public Texture2D coinTexture;
     public Texture2D endTexture;
+    public Texture2D thornsTexture;
+    public Texture2D monsterTexture;
     public SpriteFont tittleTexture;
+    private Song song;
 
     public Game1(Player player)
     {
@@ -53,7 +58,10 @@ public class Game1 : Game
         heroTexture = Content.Load<Texture2D>("hero");
         coinTexture = Content.Load<Texture2D>("coin");
         endTexture = Content.Load<Texture2D>("end");
+        thornsTexture = Content.Load<Texture2D>("thorns");
+        monsterTexture = Content.Load<Texture2D>("monster");
         tittleTexture = Content.Load<SpriteFont>("Monocraft");
+        song = Content.Load<Song>("sound");
         _activeScene = new Scene(this, _player);
     }
 
@@ -64,6 +72,7 @@ public class Game1 : Game
         {
             Exit();
         }
+        if (_player.Lives < 1) Exit();
         if (_nextScene != null) TransitionScene();
         if(_activeScene != null) _activeScene.Update(gameTime);
         base.Update(gameTime);
@@ -72,6 +81,8 @@ public class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
+        MediaPlayer.Volume = 1f;
+        MediaPlayer.Play(song);
         
         if(_activeScene != null)
         {
@@ -114,6 +125,8 @@ public class Scene
     Texture2D heroTexture;
     Texture2D coinTexture;
     Texture2D endTexture;
+    Texture2D thornsTexture;
+    Texture2D monsterTexture;
     SpriteFont tittleTexture;
     private SpriteBatch _spriteBatch;
     
@@ -133,6 +146,8 @@ public class Scene
         heroTexture = _game.heroTexture;
         coinTexture = _game.coinTexture;
         endTexture = _game.endTexture;
+        thornsTexture = _game.thornsTexture;
+        monsterTexture = _game.monsterTexture;
         tittleTexture = _game.tittleTexture;
     }
     
@@ -154,7 +169,13 @@ public class Scene
         if (kstate.IsKeyDown(Keys.S)) dY += 1;
         if (kstate.IsKeyDown(Keys.A)) dX -= 1;
         if (kstate.IsKeyDown(Keys.D)) dX += 1;
-        if (_level.LevelData[((int)_level.HeroPosition.Y + dY - 1) / 50, ((int)_level.HeroPosition.X + dX - 1) / 50] != 1 &&
+        if (_level.LevelData[((int)_level.HeroPosition.Y + dY - 1) / 50, ((int)_level.HeroPosition.X + dX - 1) / 50] == 3 ||
+            _level.LevelData[((int)_level.HeroPosition.Y + dY + 33) / 50, ((int)_level.HeroPosition.X + dX + 29) / 50] == 3)
+        {
+            _player.Lives -= 5;
+        }
+        
+        else if (_level.LevelData[((int)_level.HeroPosition.Y + dY - 1) / 50, ((int)_level.HeroPosition.X + dX - 1) / 50] != 1 &&
             _level.LevelData[((int)_level.HeroPosition.Y + dY + 33) / 50, ((int)_level.HeroPosition.X + dX + 29) / 50] != 1)
         {
             _level.HeroPosition.X += dX;
@@ -175,7 +196,6 @@ public class Scene
                     _level.Coins[((int)_level.HeroPosition.Y + dY - 1) / 50,
                         ((int)_level.HeroPosition.X + dX - 1) / 50] = new Vector2(1000, 1000);
                     this._player.Coins++;
-                    Console.WriteLine($"Собрано {this._player.Coins} монетs");
                 }
                 
                 if (_level.Coins[((int)_level.HeroPosition.Y + dY + 33) / 50,
@@ -186,11 +206,64 @@ public class Scene
                     _level.Coins[((int)_level.HeroPosition.Y + dY + 33) / 50,
                         ((int)_level.HeroPosition.X + dX + 29) / 50] = new Vector2(1000, 1000);
                     this._player.Coins++;
-                    Console.WriteLine($"Собрано {this._player.Coins} монетs");
                 }
             }
         }
 
+        
+        
+        if (Math.Abs(_level.HeroPosition.X - _level.MonsterPosition.X) < 35 &&
+            Math.Abs(_level.HeroPosition.Y - _level.MonsterPosition.Y) < 35)
+        {
+            _player.Lives -= 1;
+        }
+        if (Math.Abs(_level.HeroPosition.X - _level.MonsterPosition.X) < 40 &&
+            Math.Abs(_level.HeroPosition.Y - _level.MonsterPosition.Y) < 40 &&
+            kstate.IsKeyDown(Keys.E))
+        {
+            _level.MonsterSpeed.X = 0;
+            _level.MonsterSpeed.Y = 0;
+            _level.MonsterPosition = new Vector2(1150, 200);
+        }
+
+        //if (Math.Abs(_level.HeroPosition.X - _level.MonsterPosition.X) < 49 &&
+        //    Math.Abs(_level.HeroPosition.Y - _level.MonsterPosition.Y) < 49)
+        //{
+        //    _level.MonsterSpeed.X = _level.HeroPosition.X - _level.MonsterPosition.X / 40;
+        //    _level.MonsterSpeed.Y = _level.HeroPosition.Y - _level.MonsterPosition.Y / 40;
+        //}
+        _level.MonsterPosition += _level.MonsterSpeed;
+        if (_level.LevelData[((int)_level.MonsterPosition.Y + 0) / 50, ((int)_level.MonsterPosition.X - 1) / 50] != 0
+            && _level.LevelData[((int)_level.MonsterPosition.Y + 33) / 50, ((int)_level.MonsterPosition.X - 1) / 50] != 0)
+        {
+            _level.MonsterPosition += new Vector2(1, 0);
+            _level.MonsterSpeed = new Vector2(0, 1);
+        }
+        
+        if (_level.LevelData[((int)_level.MonsterPosition.Y + 34) / 50, ((int)_level.MonsterPosition.X + 0) / 50] != 0
+            && _level.LevelData[((int)_level.MonsterPosition.Y + 34) / 50, ((int)_level.MonsterPosition.X + 29 ) / 50] != 0)
+        {
+            _level.MonsterPosition += new Vector2(0, -1);
+            _level.MonsterSpeed = new Vector2(1, 0);
+        }
+        
+        if (_level.LevelData[((int)_level.MonsterPosition.Y + 0) / 50, ((int)_level.MonsterPosition.X + 30) / 50] != 0
+                 && _level.LevelData[((int)_level.MonsterPosition.Y + 33) / 50, ((int)_level.MonsterPosition.X + 30) / 50] != 0)
+        {
+            _level.MonsterPosition += new Vector2(-1, 0);
+            _level.MonsterSpeed = new Vector2(0, -1);
+        }
+        
+        if (_level.LevelData[((int)_level.MonsterPosition.Y - 1) / 50, ((int)_level.MonsterPosition.X + 0) / 50] != 0
+                 && _level.LevelData[((int)_level.MonsterPosition.Y - 1) / 50, ((int)_level.MonsterPosition.X + 30) / 50] != 0)
+        {
+            _level.MonsterPosition += new Vector2(0, 1);
+            _level.MonsterSpeed = new Vector2(-1, 0);
+        }
+      
+        
+        
+        
         if (_level.LevelData[((int)_level.HeroPosition.Y + dY - 1) / 50, ((int)_level.HeroPosition.X + dX - 1) / 50] == 2 ||
             _level.LevelData[((int)_level.HeroPosition.Y + dY + 33) / 50, ((int)_level.HeroPosition.X + dX + 29) / 50] == 2)
         {
@@ -211,6 +284,7 @@ public class Scene
                 if (_level.LevelData[i, j] == 1) _spriteBatch.Draw(wallTexture, new Vector2(j * 50, i * 50), Color.White);
                 else if (_level.LevelData[i, j] == default) _spriteBatch.Draw(floorTexture, new Vector2(j * 50, i * 50), Color.White);
                 else if (_level.LevelData[i, j] == 2) _spriteBatch.Draw(endTexture, new Vector2(j * 50, i * 50), Color.White);
+                else if (_level.LevelData[i, j] == 3) _spriteBatch.Draw(thornsTexture, new Vector2(j * 50, i * 50), Color.White);
             }
         }
 
@@ -220,11 +294,16 @@ public class Scene
         }
 
         _spriteBatch.Draw(heroTexture, _level.HeroPosition, Color.White);
+        _spriteBatch.Draw(monsterTexture, _level.MonsterPosition, Color.White);
+        
         _spriteBatch.DrawString(tittleTexture, "Monets:", new Vector2(100, 700), Color.White);
         _spriteBatch.DrawString(tittleTexture, _player.Coins.ToString(), new Vector2(320, 700), Color.White);
         
         _spriteBatch.DrawString(tittleTexture, "Levels:", new Vector2(500, 700), Color.White);
         _spriteBatch.DrawString(tittleTexture, _player.Levels.ToString(), new Vector2(720, 700), Color.White);
+        
+        _spriteBatch.DrawString(tittleTexture, "HP:", new Vector2(900, 700), Color.White);
+        _spriteBatch.DrawString(tittleTexture, _player.Lives.ToString(), new Vector2(990, 700), Color.White);
         _spriteBatch.End();
     }
 }
@@ -235,6 +314,8 @@ public class Level
     public int[,] LevelData;
     public Vector2 HeroPosition;
     public Vector2[,] Coins;
+    public Vector2 MonsterPosition;
+    public Vector2 MonsterSpeed = new Vector2(0, 1);
     
     private bool IsInitializedBool = false;
     private Random random = new Random();
@@ -246,7 +327,6 @@ public class Level
         this.HeroPosition = default;
         this.Coins = new Vector2[16, 24];
         var maze = MazeGenarate(13, 21);
-        Console.WriteLine("Заполняем сетку");
         for (var i = 0; i < maze.GetLength(0); i++)
         {
             for (var j = 0; j < maze.GetLength(1); j++)
@@ -255,9 +335,6 @@ public class Level
                 if (HeroPosition == default && LevelData[i, j] == default) this.HeroPosition = new Vector2(j * 50 + 10 ,i * 50 + 10);
             }
         }
-        
-        Console.WriteLine("Сыпим монеты");
-
         var coinsGenCount = 0;
         while (coinsGenCount <= 10)
         {
@@ -267,16 +344,16 @@ public class Level
                 {
                     if (this.LevelData[i, j] == 0 && random.NextDouble() < 0.247)
                     {
-                        this.Coins[i, j] = new Vector2(j * 50 + 16, i * 50 + 16);
+                        this.Coins[i, j] = new Vector2(j * 50 + 12, i * 50 + 12);
                         coinsGenCount++;
                     }
                 }
                 if (coinsGenCount > 10) break;
             }
         }
-        
-        Console.WriteLine("Ставим старт");
         this.SetEndPoin();
+        this.SetThorns();
+        SetMonster();
         this.IsInitializedBool = true;
         
     }
@@ -392,6 +469,40 @@ public class Level
                 }
                 if (isEndPointCh) break;
             }
+        }
+    }
+
+    private void SetThorns()
+    {
+        for (var i = 4; i < 13; i++)
+        {
+            for (var j = 4; j < 20; j++)
+            {
+                if (this.LevelData[i, j] == 1 
+                    && this.LevelData[i + 1, j] + this.LevelData[i - 1, j] + this.LevelData[i, j + 1] + this.LevelData[i, j - 1] > 2
+                    && random.NextDouble() < 0.327)
+                {
+                    this.LevelData[i, j] = 3;
+
+                }
+            }
+        }
+        
+    }
+
+    private void SetMonster()
+    {
+        for (var i = 4; i < 13; i++)
+        {
+            for (var j = 4; j < 20; j++)
+            {
+                if (this.LevelData[i, j] == 0 && random.NextDouble() < 0.527)
+                {
+                    this.MonsterPosition = new Vector2(j * 50 + 10, i * 50 + 10); 
+                    break;
+                }
+            }
+            if (this.MonsterPosition != default) break;
         }
     }
 }

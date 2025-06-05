@@ -36,3 +36,7 @@ D:\Games\Sharps\LBR\LBR\obj\Debug\net8.0\LBR.sourcelink.json
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\coin.xnb
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\end.xnb
 D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\Monocraft.xnb
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\monster.xnb
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\thorns.xnb
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\sound.ogg
+D:\Games\Sharps\LBR\LBR\bin\Debug\net8.0\Content\sound.xnb
